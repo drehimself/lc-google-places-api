@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Places API</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+      .form-input-container {
+        margin-top: 16px;
+      }
+
+      .form-input {
+        width: 300px;
+        padding: 6px;
+      }
+
+      .form-button {
+        padding: 10px;
+        border-radius: 8px;
+        background: #2564eb;
+        border: none;
+        color: white;
+        width: 200px;
+      }
+
+      .pac-matched {
+        color: red;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Google Places API</h1>
+      <div>
+        <form action="/endpoint" method="POST">
+          <div class="form-input-container">
+            <input type="text" class="form-input" id="address" placeholder="Address" autocomplete="off" data-lpignore="true">
+          </div>
+          <div class="form-input-container">
+            <input type="text" class="form-input" id="city" placeholder="City" autocomplete="off" data-lpignore="true">
+          </div>
+          <div class="form-input-container">
+            <input type="text" class="form-input" id="postalCode" autocomplete="off" placeholder="Postal Code" data-lpignore="true">
+          </div>
+          <div class="form-input-container">
+            <button class="form-button">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      let autocomplete;
+      let addressField = document.getElementById('address');
+
+      function initAutocomplete() {
+        autocomplete = new google.maps.places.Autocomplete(
+          addressField,
+          {
+            types: ['address'],
+            componentRestrictions: { country: ['CA'] },
+            fields: ['name', 'address_components', 'geometry'],
+          }
+        );
+
+        autocomplete.addListener('place_changed', onPlaceChanged)
+
+        google.maps.event.addDomListener(addressField, 'keydown', event => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            document.getElementById('city').focus();
+          }
+        })
+      }
+
+      function onPlaceChanged() {
+        const place = autocomplete.getPlace()
+        console.log(place)
+
+        addressField.value = place.name
+
+        place.address_components.forEach(component => {
+          if (component.types.includes('locality')) {
+            document.getElementById('city').value = component.long_name
+          }
+
+          if (component.types.includes('postal_code')) {
+            document.getElementById('postalCode').value = component.long_name
+          }
+        })
+      }
+    </script>
+    <script async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDs8qldTI4CpqZuBgB-PRSIRHLTTpcqFAY&libraries=places&callback=initAutocomplete">
+  </script>
+  </body>
+</html>
